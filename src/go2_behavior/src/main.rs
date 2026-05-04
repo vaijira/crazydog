@@ -146,9 +146,9 @@ impl BehaviorFsm {
     /// Attempt a state transition from the outside (e.g., operator command).
     pub fn transition(&mut self, cmd: &str) {
         let next = match (cmd.trim(), &self.state) {
-            ("stand", BehaviorState::Idle) => Some(BehaviorState::StandUp),
-            ("trot", BehaviorState::StandUp) => Some(BehaviorState::Trot),
-            ("patrol", BehaviorState::Trot) => {
+            ("stand", _) => Some(BehaviorState::StandUp),
+            ("trot", _) => Some(BehaviorState::Trot),
+            ("patrol", _) => {
                 Some(BehaviorState::Patrol { waypoint_index: 0 })
             }
             ("manual", _) => Some(BehaviorState::Manual),
@@ -200,15 +200,9 @@ impl BehaviorFsm {
             // ---- Idle: zero velocity --------------------------------
             BehaviorState::Idle => zero_twist(),
 
-            // ---- StandUp: ramp joints to stand pose, then go Trot --
+            // ---- StandUp: robot should stand still ------------------
             BehaviorState::StandUp => {
-                // After 2 s we assume stand is achieved (gait node handles
-                // the actual joint motion). Auto-transition to Trot.
-                if elapsed > Duration::from_secs(2) && sensors.is_stable {
-                    info!("[BehaviorFSM] Stand complete → Trot");
-                    self.state = BehaviorState::Trot;
-                    self.state_entered_at = Instant::now();
-                }
+                // Gait node handles standing pose when velocity is zero
                 zero_twist()
             }
 
