@@ -23,6 +23,7 @@ RUN apt-get update -qq \
         > /etc/apt/sources.list.d/gazebo-stable.list \
     && apt-get update -qq \
     && apt-get install -y --no-install-recommends \
+        wget \
         gz-harmonic \
         ros-jazzy-ros2-control \
         ros-jazzy-ros2-controllers \

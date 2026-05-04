@@ -18,12 +18,25 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - __NV_PRIME_RENDER_OFFLOAD=1
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+    devices:
+      - /dev/dri:/dev/dri
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     volumes:
       # Live-mount source and scripts
-      - ./src:/ws/src:ro
-      - ./scripts:/ws/scripts:ro
+      - ./src:/ws/src
+      - ./scripts:/ws/scripts
       # Rust virtual workspace manifest (needed by colcon-cargo)
-      - ./Cargo.toml:/ws/Cargo.toml:ro
+      - ./Cargo.toml:/ws/Cargo.toml
       # Persist colcon build cache between runs (survives --rm)
       - crazydog_build:/ws/build
       - crazydog_install:/ws/install

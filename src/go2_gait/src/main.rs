@@ -33,7 +33,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
-use log::{info, warn};
+use log::{debug, info};
 
 use geometry_msgs::msg::Twist;
 use rclrs::{Context, CreateBasicExecutor};
@@ -177,13 +177,13 @@ impl GaitController {
                 let t = leg_phase / DUTY_CYCLE; // 0→1 through stance
                 // Turn using lat_sign for differential drive (left side sweeps opposite to right)
                 let fwd = self.vel_x * (0.5 - t) * 0.1
-                    + lat_sign * self.ang_z * 0.05 * (0.5 - t);
+                    - lat_sign * self.ang_z * 0.05 * (0.5 - t);
                 (fwd, lat_sign * HIP_Y_OFFSET, NOMINAL_HEIGHT)
             } else {
                 // Swing: sinusoidal arc
                 let t = (leg_phase - DUTY_CYCLE) / (1.0 - DUTY_CYCLE); // 0→1 through swing
                 let fwd = self.vel_x * (t - 0.5) * 0.1
-                    + lat_sign * self.ang_z * 0.05 * (t - 0.5);
+                    - lat_sign * self.ang_z * 0.05 * (t - 0.5);
                 let height = NOMINAL_HEIGHT - STEP_HEIGHT * (PI * t).sin();
                 (fwd, lat_sign * HIP_Y_OFFSET, height)
             };
@@ -224,7 +224,7 @@ fn main() -> Result<()> {
     let _cmd_sub = node.create_subscription::<Twist, _>(
         "/go2/cmd_vel",
         move |msg: Twist| {
-            println!("[go2_gait] Received cmd_vel: x={:.2}, z={:.2}", msg.linear.x, msg.angular.z);
+            debug!("[go2_gait] Received cmd_vel: x={:.2}, z={:.2}", msg.linear.x, msg.angular.z);
             gait_cmd
                 .lock()
                 .unwrap()
@@ -234,14 +234,14 @@ fn main() -> Result<()> {
 
     // ---- Control timer at 500 Hz --------------------------------
     let gait_tick = Arc::clone(&gait);
-    let dt = 1.0 / 500.0_f64;
+    let _dt = 1.0 / 500.0_f64;
 
     let mut last_log = Instant::now();
     let _timer = node.create_timer_repeating(Duration::from_micros(2000), move || {
         let joints = gait_tick.lock().unwrap().step(0.002);
 
         if last_log.elapsed() > Duration::from_secs(1) {
-            println!("[go2_gait] Publishing 12 joints. Joint 0: {:.3}", joints[0]);
+            debug!("[go2_gait] Publishing 12 joints. Joint 0: {:.3}", joints[0]);
             last_log = Instant::now();
         }
 
