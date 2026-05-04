@@ -212,6 +212,32 @@
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
+  <!-- LiDAR sensor link -->
+  <link name="lidar_link">
+    <visual>
+      <geometry><cylinder radius="0.03" length="0.04"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+  </link>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="lidar_link"/>
+    <origin xyz="0.15 0 0.07" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Camera sensor link -->
+  <link name="camera_link">
+    <visual>
+      <geometry><box size="0.02 0.05 0.02"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="camera_link"/>
+    <origin xyz="0.19 0 0.0" rpy="0 0 0"/>
+  </joint>
+
   <!-- ================================================================
        Legs (instantiate macro × 4)
        ================================================================ -->
@@ -280,8 +306,61 @@
     </sensor>
   </gazebo>
 
-  <!-- Foot contact sensors -->
-  <xacro:macro name="foot_contact_sensor" params="prefix">
+  <!-- LiDAR Gazebo sensor -->
+  <gazebo reference="lidar_link">
+    <sensor name="lidar" type="gpu_lidar">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <topic>/lidar/points</topic>
+      <gz_frame_id>lidar_link</gz_frame_id>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>16</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.26</min_angle>
+            <max_angle>0.26</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.1</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+  <!-- Camera Gazebo sensor -->
+  <gazebo reference="camera_link">
+    <sensor name="camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <topic>/camera/image_raw</topic>
+      <gz_frame_id>camera_link</gz_frame_id>
+      <camera>
+        <horizontal_fov>1.5</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
+      </camera>
+    </sensor>
+  </gazebo>
+
+  <!-- Foot sensors (contact + force/torque) -->
+  <xacro:macro name="foot_sensors" params="prefix">
     <gazebo reference="${prefix}_foot">
       <sensor name="${prefix}_foot_contact" type="contact">
         <contact><collision>${prefix}_foot_collision</collision></contact>
@@ -290,10 +369,22 @@
         <update_rate>100</update_rate>
       </sensor>
     </gazebo>
+    <gazebo reference="${prefix}_foot_fixed">
+      <preserveFixedJoint>true</preserveFixedJoint>
+      <sensor name="${prefix}_force_torque" type="force_torque">
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <topic>/go2/${prefix}_force_torque</topic>
+        <force_torque>
+          <frame>child</frame>
+          <measure_direction>child_to_parent</measure_direction>
+        </force_torque>
+      </sensor>
+    </gazebo>
   </xacro:macro>
-  <xacro:foot_contact_sensor prefix="FL"/>
-  <xacro:foot_contact_sensor prefix="FR"/>
-  <xacro:foot_contact_sensor prefix="RL"/>
-  <xacro:foot_contact_sensor prefix="RR"/>
+  <xacro:foot_sensors prefix="FL"/>
+  <xacro:foot_sensors prefix="FR"/>
+  <xacro:foot_sensors prefix="RL"/>
+  <xacro:foot_sensors prefix="RR"/>
 
 </robot>

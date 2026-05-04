@@ -134,6 +134,13 @@ def generate_launch_description():
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             "/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU",
+            "/lidar/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+            "/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
+            "/go2/FL_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
+            "/go2/FR_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
+            "/go2/RL_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
+            "/go2/RR_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
         ],
         output="screen",
     )
