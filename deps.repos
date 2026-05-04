@@ -1,0 +1,70 @@
+# crazydog_deps.repos
+#
+# Additional VCS repos needed for Go2 simulation that are NOT included in
+# the base ros2/ros2 ros2.repos file.
+#
+# Import alongside ros2.repos:
+#   vcs import src < ros2.repos
+#   vcs import src < /path/to/crazydog/deps.repos
+#
+# Packages covered:
+#   xacro, joint_state_publisher     — robot model utilities
+#   ros2_control, ros2_controllers   — hardware abstraction layer
+#   gz_ros2_control                  — Gazebo ↔ ros2_control bridge
+#   ros_gz (ros_gz_bridge, ros_gz_sim, ros_gz_interfaces)  — Gazebo ↔ ROS 2 topics
+
+repositories:
+
+  # ---- Robot model utilities ------------------------------------
+  ros/xacro:
+    type: git
+    url: https://github.com/ros/xacro.git
+    version: ros2
+
+  ros/joint_state_publisher:
+    type: git
+    url: https://github.com/ros/joint_state_publisher.git
+    version: ros2
+
+  ros/robot_state_publisher:
+    type: git
+    url: https://github.com/ros/robot_state_publisher.git
+    version: ros2
+
+  # ---- ros2_control stack ---------------------------------------
+  ros-controls/ros2_control:
+    type: git
+    url: https://github.com/ros-controls/ros2_control.git
+    version: jazzy
+
+  ros-controls/ros2_controllers:
+    type: git
+    url: https://github.com/ros-controls/ros2_controllers.git
+    version: jazzy
+
+  ros-controls/control_msgs:
+    type: git
+    url: https://github.com/ros-controls/control_msgs.git
+    version: master
+
+  ros-controls/realtime_tools:
+    type: git
+    url: https://github.com/ros-controls/realtime_tools.git
+    version: master
+
+  ros-controls/control_toolbox:
+    type: git
+    url: https://github.com/ros-controls/control_toolbox.git
+    version: master
+
+  # ---- Gazebo Harmonic ↔ ros2_control ---------------------------
+  ros-controls/gz_ros2_control:
+    type: git
+    url: https://github.com/ros-controls/gz_ros2_control.git
+    version: jazzy
+
+  # ---- Gazebo Harmonic ↔ ROS 2 bridge ---------------------------
+  gazebosim/ros_gz:
+    type: git
+    url: https://github.com/gazebosim/ros_gz.git
+    version: jazzy

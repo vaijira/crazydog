@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>go2_behavior</name>
+  <version>0.1.0</version>
+  <description>
+    Rust — high-level behavior finite-state machine for the Unitree Go2.
+    States: Idle | StandUp | Trot | Patrol | EmergencyStop.
+    Subscribes to /joint_states, /odom, /imu/data.
+    Publishes  /cmd_vel and /go2/behavior_state.
+  </description>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cargo</buildtool_depend>
+
+  <depend>rclrs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+
+  <export>
+    <build_type>ament_cargo</build_type>
+  </export>
+</package>

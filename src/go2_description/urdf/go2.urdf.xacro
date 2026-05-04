@@ -1,0 +1,299 @@
+<?xml version="1.0"?>
+<!--
+  go2.urdf.xacro
+  Simplified URDF for the Unitree Go2 quadruped robot.
+
+  Legs are named: FL (front-left), FR (front-right),
+                  RL (rear-left),  RR (rear-right)
+  Each leg has 3 joints:
+    <leg>_hip    — abduction / adduction  (roll)
+    <leg>_thigh  — hip flexion / extension (pitch)
+    <leg>_calf   — knee flexion / extension (pitch)
+  Plus a virtual foot contact link with no DOF.
+
+  Physical parameters are approximate; replace with Unitree's official
+  URDF once you have access to the SDK resource pack.
+
+  ros2_control plugin: gz_ros2_control/GazeboSystem
+-->
+<robot name="go2" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ================================================================
+       Macro definitions
+       ================================================================ -->
+
+  <!-- Inertia helpers -->
+  <xacro:macro name="box_inertia" params="m x y z">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0"
+               iyy="${m*(x*x+z*z)/12}" iyz="0"
+               izz="${m*(x*x+y*y)/12}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="cylinder_inertia" params="m r h">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0"
+               iyy="${m*(3*r*r+h*h)/12}" iyz="0"
+               izz="${m*r*r/2}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- ================================================================
+       Constants
+       ================================================================ -->
+  <xacro:property name="body_length" value="0.3762"/>
+  <xacro:property name="body_width"  value="0.0935"/>
+  <xacro:property name="body_height" value="0.114"/>
+  <xacro:property name="body_mass"   value="6.921"/>
+
+  <xacro:property name="hip_offset_x"  value="0.1881"/>
+  <xacro:property name="hip_offset_y"  value="0.04675"/>
+  <xacro:property name="hip_length"    value="0.08"/>
+  <xacro:property name="hip_mass"      value="0.678"/>
+
+  <xacro:property name="thigh_length"  value="0.213"/>
+  <xacro:property name="thigh_mass"    value="1.152"/>
+
+  <xacro:property name="calf_length"   value="0.213"/>
+  <xacro:property name="calf_mass"     value="0.154"/>
+
+  <xacro:property name="foot_radius"   value="0.02"/>
+
+  <!-- Joint limits (radians) -->
+  <xacro:property name="hip_limit"   value="0.863"/>  <!-- ±49.5 deg -->
+  <xacro:property name="thigh_upper" value="4.189"/>  <!-- +240 deg -->
+  <xacro:property name="thigh_lower" value="-0.524"/> <!-- -30  deg -->
+  <xacro:property name="calf_upper"  value="-0.524"/> <!-- -30  deg -->
+  <xacro:property name="calf_lower"  value="-2.775"/> <!-- -159 deg -->
+
+  <!-- ros2_control effort limit (Nm) -->
+  <xacro:property name="effort_limit"   value="23.7"/>
+  <xacro:property name="velocity_limit" value="30.1"/>
+
+  <!-- ================================================================
+       Leg macro
+       ================================================================
+       params:
+         prefix : FL | FR | RL | RR
+         reflect_x : +1 (front) | -1 (rear)
+         reflect_y : +1 (left)  | -1 (right)
+  -->
+  <xacro:macro name="leg" params="prefix reflect_x reflect_y">
+
+    <!-- Hip link -->
+    <link name="${prefix}_hip">
+      <visual>
+        <geometry><cylinder radius="0.046" length="${hip_length}"/></geometry>
+        <origin xyz="0 ${reflect_y*hip_length/2} 0" rpy="${pi/2} 0 0"/>
+      </visual>
+      <collision>
+        <geometry><cylinder radius="0.046" length="${hip_length}"/></geometry>
+        <origin xyz="0 ${reflect_y*hip_length/2} 0" rpy="${pi/2} 0 0"/>
+      </collision>
+      <xacro:cylinder_inertia m="${hip_mass}" r="0.046" h="${hip_length}"/>
+    </link>
+
+    <!-- Hip joint: abduction/adduction -->
+    <joint name="${prefix}_hip_joint" type="revolute">
+      <parent link="base_link"/>
+      <child  link="${prefix}_hip"/>
+      <origin xyz="${reflect_x*hip_offset_x} ${reflect_y*hip_offset_y} 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="${-hip_limit}" upper="${hip_limit}"
+             effort="${effort_limit}" velocity="${velocity_limit}"/>
+      <dynamics damping="0.1" friction="0.0"/>
+    </joint>
+
+    <!-- Thigh link -->
+    <link name="${prefix}_thigh">
+      <visual>
+        <geometry><box size="0.05 0.04 ${thigh_length}"/></geometry>
+        <origin xyz="0 0 ${-thigh_length/2}" rpy="0 0 0"/>
+      </visual>
+      <collision>
+        <geometry><box size="0.05 0.04 ${thigh_length}"/></geometry>
+        <origin xyz="0 0 ${-thigh_length/2}" rpy="0 0 0"/>
+      </collision>
+      <xacro:box_inertia m="${thigh_mass}" x="0.05" y="0.04" z="${thigh_length}"/>
+    </link>
+
+    <!-- Thigh joint: hip pitch -->
+    <joint name="${prefix}_thigh_joint" type="revolute">
+      <parent link="${prefix}_hip"/>
+      <child  link="${prefix}_thigh"/>
+      <origin xyz="0 ${reflect_y*hip_length} 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="${thigh_lower}" upper="${thigh_upper}"
+             effort="${effort_limit}" velocity="${velocity_limit}"/>
+      <dynamics damping="0.1" friction="0.0"/>
+    </joint>
+
+    <!-- Calf link -->
+    <link name="${prefix}_calf">
+      <visual>
+        <geometry><box size="0.04 0.028 ${calf_length}"/></geometry>
+        <origin xyz="0 0 ${-calf_length/2}" rpy="0 0 0"/>
+      </visual>
+      <collision>
+        <geometry><box size="0.04 0.028 ${calf_length}"/></geometry>
+        <origin xyz="0 0 ${-calf_length/2}" rpy="0 0 0"/>
+      </collision>
+      <xacro:box_inertia m="${calf_mass}" x="0.04" y="0.028" z="${calf_length}"/>
+    </link>
+
+    <!-- Calf (knee) joint -->
+    <joint name="${prefix}_calf_joint" type="revolute">
+      <parent link="${prefix}_thigh"/>
+      <child  link="${prefix}_calf"/>
+      <origin xyz="0 0 ${-thigh_length}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="${calf_lower}" upper="${calf_upper}"
+             effort="${effort_limit}" velocity="${velocity_limit}"/>
+      <dynamics damping="0.1" friction="0.0"/>
+    </joint>
+
+    <!-- Foot (sphere — for contact) -->
+    <link name="${prefix}_foot">
+      <visual>
+        <geometry><sphere radius="${foot_radius}"/></geometry>
+      </visual>
+      <collision>
+        <geometry><sphere radius="${foot_radius}"/></geometry>
+        <surface>
+          <friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction>
+        </surface>
+      </collision>
+      <inertial>
+        <mass value="0.06"/>
+        <inertia ixx="0.000096" ixy="0" ixz="0"
+                 iyy="0.000096" iyz="0" izz="0.000096"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_foot_fixed" type="fixed">
+      <parent link="${prefix}_calf"/>
+      <child  link="${prefix}_foot"/>
+      <origin xyz="0 0 ${-calf_length}" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+
+  <!-- ================================================================
+       Base / body
+       ================================================================ -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${body_length} ${body_width*2} ${body_height}"/>
+      </geometry>
+      <material name="dark_gray">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${body_length} ${body_width*2} ${body_height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="${body_mass}"
+                       x="${body_length}"
+                       y="${body_width*2}"
+                       z="${body_height}"/>
+  </link>
+
+  <!-- IMU sensor link -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="imu_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================================================================
+       Legs (instantiate macro × 4)
+       ================================================================ -->
+  <xacro:leg prefix="FL" reflect_x=" 1" reflect_y=" 1"/>
+  <xacro:leg prefix="FR" reflect_x=" 1" reflect_y="-1"/>
+  <xacro:leg prefix="RL" reflect_x="-1" reflect_y=" 1"/>
+  <xacro:leg prefix="RR" reflect_x="-1" reflect_y="-1"/>
+
+  <!-- ================================================================
+       ros2_control — hardware interface
+       Controls 12 joints (4 legs × 3 joints).
+       In simulation, the GazeboSystem plugin intercepts this.
+       ================================================================ -->
+  <ros2_control name="go2_hardware" type="system">
+    <hardware>
+      <!-- Swap this for the real Go2 hardware plugin when on the real robot -->
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+
+    <!-- Declare every actuated joint -->
+    <xacro:macro name="joint_interface" params="name">
+      <joint name="${name}">
+        <command_interface name="position">
+          <param name="min">${calf_lower}</param>
+          <param name="max">${thigh_upper}</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+    </xacro:macro>
+
+    <xacro:joint_interface name="FL_hip_joint"/>
+    <xacro:joint_interface name="FL_thigh_joint"/>
+    <xacro:joint_interface name="FL_calf_joint"/>
+    <xacro:joint_interface name="FR_hip_joint"/>
+    <xacro:joint_interface name="FR_thigh_joint"/>
+    <xacro:joint_interface name="FR_calf_joint"/>
+    <xacro:joint_interface name="RL_hip_joint"/>
+    <xacro:joint_interface name="RL_thigh_joint"/>
+    <xacro:joint_interface name="RL_calf_joint"/>
+    <xacro:joint_interface name="RR_hip_joint"/>
+    <xacro:joint_interface name="RR_thigh_joint"/>
+    <xacro:joint_interface name="RR_calf_joint"/>
+
+  </ros2_control>
+
+  <!-- ================================================================
+       Gazebo-specific plugins
+       ================================================================ -->
+  <gazebo>
+    <!-- ros2_control integration -->
+    <plugin filename="gz_ros2_control-system"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find go2_description)/config/ros2_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+  <!-- IMU Gazebo sensor -->
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <topic>/imu/data</topic>
+      <gz_frame_id>imu_link</gz_frame_id>
+    </sensor>
+  </gazebo>
+
+  <!-- Foot contact sensors -->
+  <xacro:macro name="foot_contact_sensor" params="prefix">
+    <gazebo reference="${prefix}_foot">
+      <sensor name="${prefix}_foot_contact" type="contact">
+        <contact><collision>${prefix}_foot_collision</collision></contact>
+        <topic>/go2/${prefix}_foot_contact</topic>
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+  <xacro:foot_contact_sensor prefix="FL"/>
+  <xacro:foot_contact_sensor prefix="FR"/>
+  <xacro:foot_contact_sensor prefix="RL"/>
+  <xacro:foot_contact_sensor prefix="RR"/>
+
+</robot>

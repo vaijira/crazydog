@@ -1,0 +1,19 @@
+[package]
+name    = "go2_gait"
+version = "0.1.0"
+edition = "2024"
+description = "Trot gait generator + IK stub for the Unitree Go2 (ROS 2 / rclrs)"
+license = "Apache-2.0"
+
+[[bin]]
+name = "go2_gait"
+path = "src/main.rs"
+
+[dependencies]
+rclrs         = { workspace = true }
+geometry_msgs = { workspace = true }
+sensor_msgs   = { workspace = true }
+std_msgs      = { workspace = true }
+anyhow        = { workspace = true }
+log           = { workspace = true }
+env_logger    = { workspace = true }

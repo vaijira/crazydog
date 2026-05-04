@@ -1,0 +1,36 @@
+# ============================================================
+# CrazyDog — Cargo workspace
+# All Rust ROS 2 packages are members of this workspace.
+# Each member is also an ament_cargo ROS 2 package (package.xml).
+# ============================================================
+
+[workspace]
+members = [
+    "src/go2_behavior",
+    "src/go2_gait",
+    "src/go2_teleop",
+]
+resolver = "2"
+
+# Shared profile settings -----------------------------------------------
+
+[profile.release]
+opt-level      = 3
+lto            = "thin"
+codegen-units  = 1
+strip          = true
+
+[profile.dev]
+opt-level      = 0
+debug          = true
+
+# Shared dependency versions (keeps things consistent across packages) ---
+[workspace.dependencies]
+rclrs           = "0.7"
+geometry_msgs   = "*"
+sensor_msgs     = "*"
+nav_msgs        = "*"
+std_msgs        = "*"
+anyhow          = "1"
+log             = "0.4"
+env_logger      = "0.11"

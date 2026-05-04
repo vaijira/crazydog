@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>go2_teleop</name>
+  <version>0.1.0</version>
+  <description>
+    Rust — keyboard teleoperation node for the Unitree Go2.
+    Reads raw terminal keypresses (no ncurses dependency) and publishes
+    /cmd_vel (geometry_msgs/Twist) and /go2/cmd_behavior (std_msgs/String).
+
+    Key bindings:
+      w/s      — forward / backward velocity
+      a/d      — turn left / right
+      SPACE    — stop (zero velocity)
+      1        — command: stand
+      2        — command: trot
+      3        — command: patrol
+      0        — command: idle
+      e        — emergency stop
+      c        — clear e-stop
+      q        — quit node
+  </description>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cargo</buildtool_depend>
+
+  <depend>rclrs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <export>
+    <build_type>ament_cargo</build_type>
+  </export>
+</package>

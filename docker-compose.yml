@@ -1,0 +1,40 @@
+# docker-compose.yml — CrazyDog development environment
+#
+# Usage:
+#   docker compose run --rm crazydog          # interactive shell
+#   docker compose run --rm crazydog bash     # explicit bash
+#
+# Gazebo GUI requires X11 forwarding. On the host run:
+#   xhost +local:docker
+# before starting the container.
+
+services:
+  crazydog:
+    build: .
+    image: crazydog:latest
+    pull_policy: never          # always use local build; never pull from registry
+    network_mode: host           # required for ROS 2 DDS discovery
+    privileged: false
+    environment:
+      - DISPLAY=${DISPLAY}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    volumes:
+      # Live-mount source and scripts
+      - ./src:/ws/src:ro
+      - ./scripts:/ws/scripts:ro
+      # Rust virtual workspace manifest (needed by colcon-cargo)
+      - ./Cargo.toml:/ws/Cargo.toml:ro
+      # Persist colcon build cache between runs (survives --rm)
+      - crazydog_build:/ws/build
+      - crazydog_install:/ws/install
+      # Persist cargo registry
+      - crazydog_cargo:/root/.cargo
+      # X11 socket for Gazebo GUI
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    stdin_open: true
+    tty: true
+
+volumes:
+  crazydog_build:
+  crazydog_install:
+  crazydog_cargo:
