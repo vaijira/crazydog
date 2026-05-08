@@ -22,8 +22,8 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=all
       - __NV_PRIME_RENDER_OFFLOAD=1
       - __GLX_VENDOR_LIBRARY_NAME=nvidia
-    devices:
-      - /dev/dri:/dev/dri
+    # devices:
+    #   - /dev/dri:/dev/dri
     deploy:
       resources:
         reservations:

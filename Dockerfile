@@ -34,6 +34,12 @@ RUN apt-get update -qq \
         ros-jazzy-joint-state-publisher-gui \
         ros-jazzy-xacro \
         ros-jazzy-test-msgs \
+        # OpenGL / Mesa hardware acceleration (Intel/AMD/NVIDIA)
+        libgl1-mesa-dri \
+        libglx-mesa0 \
+        libegl-mesa0 \
+        mesa-utils \
+        mesa-vulkan-drivers \
         # Rust / bindgen requirements
         libclang-dev \
         python3-pip \
