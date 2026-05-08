@@ -277,7 +277,7 @@ fn main() -> Result<()> {
     // ------------------------------------------------------------------ //
     // Publishers
     // ------------------------------------------------------------------ //
-    let cmd_vel_pub = node.create_publisher::<Twist>("/go2/cmd_vel")?;
+    let cmd_vel_pub = node.create_publisher::<Twist>("/cmd_vel")?;
     let state_pub = node.create_publisher::<RosString>("/go2/behavior_state")?;
 
     // ------------------------------------------------------------------ //

@@ -88,12 +88,12 @@ def generate_launch_description():
     # ------------------------------------------------------------------ #
     # robot_state_publisher
     # ------------------------------------------------------------------ #
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="screen",
-        parameters=[robot_description, {"use_sim_time": use_sim}],
-    )
+    # robot_state_publisher = Node(
+    #     package="robot_state_publisher",
+    #     executable="robot_state_publisher",
+    #     output="screen",
+    #     parameters=[robot_description, {"use_sim_time": use_sim}],
+    # )
 
     # ------------------------------------------------------------------ #
     # Gazebo Harmonic (gz sim)
@@ -189,10 +189,10 @@ def generate_launch_description():
         output="screen",
     )
 
-    go2_gait = Node(
-        package="go2_gait",
-        executable="go2_gait",
-        output="screen",
+    go2_champ = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(get_package_share_directory("go2_config"), "launch", "champ.launch.py")
+        )
     )
 
     # ------------------------------------------------------------------ #
@@ -213,14 +213,14 @@ def generate_launch_description():
     return LaunchDescription(
         declared_args
         + [
-            robot_state_publisher,
+            # robot_state_publisher,
             gz_sim,
             spawn_robot,
             gz_bridge,
             load_jsb_after_spawn,
             load_jc_after_jsb,
             go2_behavior,
-            go2_gait,
+            go2_champ,
             rviz,
         ]
     )

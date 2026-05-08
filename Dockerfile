@@ -34,6 +34,8 @@ RUN apt-get update -qq \
         ros-jazzy-joint-state-publisher-gui \
         ros-jazzy-xacro \
         ros-jazzy-test-msgs \
+        ros-jazzy-angles \
+        ros-jazzy-robot-localization \
         # OpenGL / Mesa hardware acceleration (Intel/AMD/NVIDIA)
         libgl1-mesa-dri \
         libglx-mesa0 \

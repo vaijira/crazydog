@@ -1,0 +1,4 @@
+[submodule "src/champ"]
+	path = src/champ
+	url = https://github.com/chvmp/champ
+	branch = ros2
