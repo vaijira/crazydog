@@ -235,12 +235,25 @@ fn main() -> Result<()> {
     // ---- Control timer at 500 Hz --------------------------------
     let gait_tick = Arc::clone(&gait);
     let _dt = 1.0 / 500.0_f64;
+    let startup = Instant::now();
 
     let mut last_log = Instant::now();
     let _timer = node.create_timer_repeating(Duration::from_micros(2000), move || {
-        let joints = gait_tick.lock().unwrap().step(0.002);
+        // Hold standing pose for first 3 seconds to let robot settle after spawn
+        let settling = startup.elapsed().as_secs_f64() < 3.0;
+        let joints = if settling {
+            // Force standing pose (zero velocity)
+            let mut g = gait_tick.lock().unwrap();
+            g.update_command(0.0, 0.0);
+            g.step(0.002)
+        } else {
+            gait_tick.lock().unwrap().step(0.002)
+        };
 
         if last_log.elapsed() > Duration::from_secs(1) {
+            if settling {
+                info!("[go2_gait] Settling... ({:.1}s)", startup.elapsed().as_secs_f64());
+            }
             debug!("[go2_gait] Publishing 12 joints. Joint 0: {:.3}", joints[0]);
             last_log = Instant::now();
         }

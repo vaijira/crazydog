@@ -9,6 +9,8 @@ members = [
     "src/go2_behavior",
     "src/go2_gait",
     "src/go2_teleop",
+    "src/go2_detector",
+    "src/go2_siren",
 ]
 resolver = "2"
 

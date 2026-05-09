@@ -120,7 +120,7 @@ def generate_launch_description():
             "-name", "go2",
             "-world", "go2_empty",
             "-topic", "robot_description",
-            "-z", "0.5",          # spawn 0.5 m above ground
+            "-z", "0.35",          # spawn just above nominal standing height (0.30m)
         ],
         output="screen",
     )
@@ -134,13 +134,16 @@ def generate_launch_description():
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             "/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU",
-            "/lidar/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+            "/lidar/points/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
             "/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image",
             "/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
             "/go2/FL_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
             "/go2/FR_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
             "/go2/RL_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
             "/go2/RR_force_torque@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
+        ],
+        remappings=[
+            ("/lidar/points/points", "/lidar/points"),
         ],
         output="screen",
     )
@@ -189,6 +192,18 @@ def generate_launch_description():
         output="screen",
     )
 
+    go2_detector = Node(
+        package="go2_detector",
+        executable="go2_detector",
+        output="screen",
+    )
+
+    go2_siren = Node(
+        package="go2_siren",
+        executable="go2_siren",
+        output="screen",
+    )
+
     go2_champ = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory("go2_config"), "launch", "champ.launch.py")
@@ -220,6 +235,8 @@ def generate_launch_description():
             load_jsb_after_spawn,
             load_jc_after_jsb,
             go2_behavior,
+            go2_detector,
+            go2_siren,
             go2_champ,
             rviz,
         ]
